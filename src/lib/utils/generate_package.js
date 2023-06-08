@@ -1,7 +1,7 @@
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 
-async function writeZipToCWD(Zip, modulesPath) {
+async function extractZip(Zip, modulesPath) {
   // get files out of zip object
   const Promises = [];
   Zip.forEach(async (relativePath, file) => {
@@ -18,4 +18,4 @@ async function writeZipToCWD(Zip, modulesPath) {
   await Promise.all(Promises);
 }
 
-export default writeZipToCWD;
+export default extractZip;

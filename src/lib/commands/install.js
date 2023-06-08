@@ -18,7 +18,7 @@ function nameImportedPackage(packagePath, nodeModulesPath) {
   renameSync(tempDirPath, finalDirPath);
 }
 
-export async function install() {
+export async function install(urlOrName = "") {
   // throws if configs are not found before making node_modules
   const configPathDir = findConfig(cwd(), { mknode: true });
   const nodeModulesPath = join(configPathDir, "node_modules");

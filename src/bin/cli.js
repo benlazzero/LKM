@@ -34,21 +34,5 @@ program
   .command("build [location]")
   .action((location) => {});
 
-// update
-program
-  .description("removes old package and brings in new one in place")
-  .command("update <package> <updateURL>")
-  .alias("up")
-  .action((packageName, updateURL) => {});
-
 // Parse arguments
 program.parse(process.argv);
-
-// check for package.json
-function validate_cwd() {
-  const cwd = process.cwd();
-  const packageJsonPath = path.join(cwd, "package.json");
-  if (!fs.existsSync(packageJsonPath)) {
-    throw new Error("not in lpn/npm dir");
-  }
-}
