@@ -2,6 +2,7 @@ import { join, dirname } from "path";
 import { existsSync, mkdirSync } from "fs";
 
 // recursivly look for package.json, stops at 50 or root dir
+// TODO: dont use recursion
 export function findConfig(currentDir, mknode = false, depth = 0) {
   if (depth > 50) {
     throw new Error("Could not find a package.json file");

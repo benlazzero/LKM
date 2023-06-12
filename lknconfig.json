@@ -1,0 +1,8 @@
+{
+  "name": "lkn",
+  "description": "Linkedin package manager cli tool",
+  "version": "0.0.1",
+  "main": "src/bin/cli.js",
+  "author": "",
+  "license": "ISC"
+}

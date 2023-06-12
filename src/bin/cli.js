@@ -28,7 +28,7 @@ program
   .option("-g", "Save package globally")
   .action((packageName, options) => {});
 
-// build package
+// build
 program
   .description('Exports pdf to be uploaded to a Linkedin post for "hosting"')
   .command("build [location]")

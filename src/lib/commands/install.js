@@ -2,9 +2,11 @@ import { findConfig } from "../utils/path_helpers.js";
 import { join } from "path";
 import { readFileSync, renameSync } from "fs";
 import { cwd } from "node:process";
+import { resolver } from "../utils/resolver.js";
 import fetchPackage from "../utils/fetch_package.js";
 import { bufferToZip } from "../utils/decode_package.js";
 import extractZip from "../utils/generate_package.js";
+import { nameClassifier } from "../utils/resolver.js";
 
 function nameImportedPackage(packagePath, nodeModulesPath) {
   // get the name/version out of the lkn package
@@ -18,25 +20,35 @@ function nameImportedPackage(packagePath, nodeModulesPath) {
   renameSync(tempDirPath, finalDirPath);
 }
 
-export async function install(urlOrName = "") {
+export async function install(urlOrName) {
+  const isUrl = nameClassifier(urlOrName);
   // throws if configs are not found before making node_modules
   const configPathDir = findConfig(cwd(), { mknode: true });
   const nodeModulesPath = join(configPathDir, "node_modules");
   // no registry yet so have to make tempnamed dir then rename after config is read
   // will prob keep because registy is gonna be a twitter account
-  const packagePathUnnamed = join(nodeModulesPath, "TempName");
+  let packagePath = "";
+  let packageUrl = "";
+  if (isUrl) {
+    packagePath = join(nodeModulesPath, "TempName");
+    packageUrl = urlOrName;
+  } else {
+    packagePath = join(nodeModulesPath, urlOrName);
+    // get url from name
+    packageUrl = await resolver(urlOrName);
+  }
 
   // fetch package from linkedin
   // hard url for now for debug
   // gonna get args from commanderjs and will also need function to check registry if not url
-  const pkurl =
-    "https://media.licdn.com/dms/document/media/D561FAQHpu5xF1-IRMQ/feedshare-document-pdf-analyzed/0/1685590104258?e=1686787200&v=beta&t=EPPDxfco0QpgCa3cNpuLf4BkEmEVUCFio17SBJpi0ug";
-  const rawPackageBuffer = await fetchPackage(pkurl);
+  const rawPackageBuffer = await fetchPackage(packageUrl);
   // buffer to zip to original format
   const ZippedPackage = await bufferToZip(rawPackageBuffer);
-  await extractZip(ZippedPackage, packagePathUnnamed);
-  nameImportedPackage(packagePathUnnamed, nodeModulesPath);
+  await extractZip(ZippedPackage, packagePath);
+  if (isUrl) {
+    nameImportedPackage(packagePath, nodeModulesPath);
+  }
   console.log("finished package install");
 }
 
-install();
+install("expressjs");

@@ -1,8 +1,21 @@
 import puppeteer from "puppeteer";
 
+function parseTweet(tweetString) {
+  const splitIndex = tweetString.indexOf("@");
+  if (splitIndex == -1) {
+    return;
+  }
+  const parsedTweetArr = tweetString.split("@");
+  if (parsedTweetArr[1].includes("media.licdn.com")) {
+    return parsedTweetArr;
+  } else {
+    return;
+  }
+}
+
 // mostly stuff to get it to work with twitter and not get rejected
 // scrapes a twitter profiles tweets for n length of scroll*1000px
-async function scrapeTitle(url, scroll = 6) {
+export async function scrapeRegistry(url, scroll = 6) {
   const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
   await page.setUserAgent(
@@ -29,20 +42,31 @@ async function scrapeTitle(url, scroll = 6) {
     }, scrollHeight);
   }
 
-  await page.waitForSelector('[data-testid="tweetText"]');
   // finding tweettext tags
-  let allContents = [];
+  // TODO: search for package name instead of grabbing all the packages like a caveman
+  await page.waitForSelector('[data-testid="tweetText"]');
+  let allPackages = [];
   for (let i = 0; i < scroll; i++) {
     let textContents = await page.$$eval('[data-testid="tweetText"]', (elements) =>
       elements.map((el) => el.textContent)
     );
-    allContents.push(textContents);
+    allPackages.push(textContents);
     await autoScroll(page, 1000); // length will need some tweaking once registry is live
   }
-  console.log(allContents);
+
+  // remove duplicates from over zelous scraper
+  allPackages = allPackages.flat();
+  const uniqPackages = [...new Set(allPackages)];
+
+  // make key/value (packagename/link)
+  const registryObject = {};
+  uniqPackages.forEach(async (tweet) => {
+    const packageTuple = await parseTweet(tweet);
+    registryObject[packageTuple[0]] = packageTuple[1];
+  });
   await browser.close();
+  return registryObject;
 }
 
 // hardcoded url will just be the registry twitter acount once made
-let url = "https://twitter.com/t3dotgg";
-scrapeTitle(url);
+let url = "https://twitter.com/lknregistry";
